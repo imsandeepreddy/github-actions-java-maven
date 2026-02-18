@@ -380,6 +380,25 @@ Preferred:
 * Multi-stage builds
 * Minimal runtime image
 
+### Multi stage, minimal runtime, build outside, copy only dist
+```
+# Stage 1 – Build
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci # clean install dependencies
+COPY . . # copy all packages, code etc
+RUN npm run build # creates dist folder
+
+# Stage 2 – Runtime
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production # clean install only production dependencies
+COPY --from=builder /app/dist ./dist # copy only dist folder
+CMD ["node", "dist/app.js"] # run node
+```
+
 ---
 
 # 5️⃣ DevOps Topics You Must Learn
